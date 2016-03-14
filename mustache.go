@@ -18,6 +18,12 @@ var (
 	// is true (the default), an empty string is emitted. If it is false, an error
 	// is generated instead.
 	AllowMissingVariables = true
+
+	// MissingAsIdentity defines the behavior for a rendered missing variable
+	// when AllowMissingVariables is true. If MissingAsIdentity is true
+	// (default false) the missing variable will be rendered as an identity function,
+	// the mustache variable string literal rendered back in the HTML.
+	MissingAsIdentity = false
 )
 
 // A TagType represents the specific type of mustache tag that a Tag
@@ -395,16 +401,16 @@ func (tmpl *Template) parse() error {
 
 // Evaluate interfaces and pointers looking for a value that can look up the name, via a
 // struct field, method, or map key, and return the result of the lookup.
-func lookup(contextChain []interface{}, name string, allowMissing bool) (reflect.Value, error) {
+func lookup(contextChain []interface{}, name string, allowMissing bool, missingAsIdentity bool) (reflect.Value, error) {
 	// dot notation
 	if name != "." && strings.Contains(name, ".") {
 		parts := strings.SplitN(name, ".", 2)
 
-		v, err := lookup(contextChain, parts[0], allowMissing)
+		v, err := lookup(contextChain, parts[0], allowMissing, missingAsIdentity)
 		if err != nil {
 			return v, err
 		}
-		return lookup([]interface{}{v}, parts[1], allowMissing)
+		return lookup([]interface{}{v}, parts[1], allowMissing, missingAsIdentity)
 	}
 
 	defer func() {
@@ -453,7 +459,12 @@ Outer:
 		}
 	}
 	if allowMissing {
-		return reflect.Value{}, nil
+		if missingAsIdentity { // render as idenitty mustache variable
+			namevar := fmt.Sprintf("{{%s}}", name)
+			return reflect.ValueOf(namevar), nil
+		} else {
+			return reflect.Value{}, nil
+		}
 	}
 	return reflect.Value{}, fmt.Errorf("Missing variable %q", name)
 }
@@ -493,7 +504,7 @@ loop:
 }
 
 func renderSection(section *sectionElement, contextChain []interface{}, buf io.Writer) error {
-	value, err := lookup(contextChain, section.name, true)
+	value, err := lookup(contextChain, section.name, true, false)
 	if err != nil {
 		return err
 	}
@@ -545,7 +556,7 @@ func renderElement(element interface{}, contextChain []interface{}, buf io.Write
 				fmt.Printf("Panic while looking up %q: %s\n", elem.name, r)
 			}
 		}()
-		val, err := lookup(contextChain, elem.name, AllowMissingVariables)
+		val, err := lookup(contextChain, elem.name, AllowMissingVariables, MissingAsIdentity)
 		if err != nil {
 			return err
 		}

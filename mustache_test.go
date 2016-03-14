@@ -204,6 +204,17 @@ var missing = []Test{
 	{`"{{a.b.c.name}}" == ""`, map[string]interface{}{"a": map[string]interface{}{"b": map[string]string{}}, "c": map[string]string{"name": "Jim"}}, `"" == ""`, nil},
 }
 
+var missingIdentities = []Test{
+	//does not exist
+	{`{{dne}}`, map[string]string{"name": "world"}, "{{dne}}", nil},
+	{`{{foo}}`, User{"Mike", 1}, "{{foo}}", nil},
+	{`{{foo_bar}}`, &User{"Mike", 1}, "{{foo_bar}}", nil},
+	//dotted names(dot notation)
+	// identity rendering of dot notation renders the identity as the final variable in the dot array only
+	{`"{{a.b.c}}" == ""`, map[string]interface{}{}, `"{{c}}" == ""`, nil},
+	{`"{{a.b.c.name}}" == ""`, map[string]interface{}{"a": map[string]interface{}{"b": map[string]string{}}, "c": map[string]string{"name": "Jim"}}, `"{{name}}" == ""`, nil},
+}
+
 func TestMissing(t *testing.T) {
 	// Default behavior, AllowMissingVariables=true
 	for _, test := range missing {
@@ -215,8 +226,21 @@ func TestMissing(t *testing.T) {
 		}
 	}
 
+	// test MissingAsIdentity=true, should not be empty string
+	MissingAsIdentity = true
+	for _, test := range missingIdentities {
+		output, err := Render(test.tmpl, test.context)
+		if err != nil {
+			t.Error(err)
+		} else if output != test.expected {
+			t.Errorf("%q expected %q got %q", test.tmpl, test.expected, output)
+		}
+	}
+
 	// Now set AllowMissingVariables=false and confirm we get errors.
 	AllowMissingVariables = false
+	// set MissingAsIdentity to default false again
+	MissingAsIdentity = false
 	defer func() { AllowMissingVariables = true }()
 	for _, test := range missing {
 		output, err := Render(test.tmpl, test.context)
