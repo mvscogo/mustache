@@ -2,6 +2,21 @@
 
 [![Build Status](https://img.shields.io/travis/cbroglie/mustache.svg)](https://travis-ci.org/cbroglie/mustache)
 
+## This is a fork of cbroglie's mustache fork. 
+## Reason for a second fork: Render missing variables as identity
+Upon finding an unknown/missing variable the current cbroglie package only gave the option to render as an empty string or throw an error.
+
+Most of the time this works fine; you can't expect to handle all variables so just render unknown ones as "".
+
+But what happens if you/your program is rendering generic templates for downstream users to re-render custom variables their own way?
+A missing variable as an empty string will break such a process. 
+
+This new fork provides the new global variable option **MissingAsIdentity** to allow for the rendering of missing variables as an indentity function, interpolating the original variable "as is" instead of an empty string. 
+
+For example: {{unknown}} would be rendered as {{unknown}}, instead of "".
+
+If you want this functionality, after importing the package be sure to set **MissingAsIdentity** = *true* in your code.
+
 ## Why a Fork?
 
 I forked [hoisie/mustache](https://github.com/hoisie/mustache) because it does not appear to be maintained, and I wanted to add the following functionality:
@@ -19,7 +34,7 @@ For more information about mustache, check out the [mustache project page](http:
 Also check out some [example mustache files](http://github.com/defunkt/mustache/tree/master/examples/)
 
 ## Installation
-To install mustache.go, simply run `go get github.com/cbroglie/mustache`. To use it in a program, use `import "github.com/cbroglie/mustache"`
+To install mustache.go, simply run `go get github.com/mvscogo/mustache`. To use it in a program, use `import "github.com/mvscogo/mustache"`
 
 ## Usage
 There are four main methods in this package:
