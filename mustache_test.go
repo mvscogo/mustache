@@ -172,6 +172,8 @@ var tests = []Test{
 
 func TestBasic(t *testing.T) {
 	// Default behavior, AllowMissingVariables=true
+	MissingAsIdentity = false
+	defer func() { MissingAsIdentity = true }()
 	for _, test := range tests {
 		output, err := Render(test.tmpl, test.context)
 		if err != nil {
@@ -217,6 +219,8 @@ var missingIdentities = []Test{
 
 func TestMissing(t *testing.T) {
 	// Default behavior, AllowMissingVariables=true
+	// render as empty string
+	MissingAsIdentity = false
 	for _, test := range missing {
 		output, err := Render(test.tmpl, test.context)
 		if err != nil {
@@ -239,7 +243,6 @@ func TestMissing(t *testing.T) {
 
 	// Now set AllowMissingVariables=false and confirm we get errors.
 	AllowMissingVariables = false
-	// set MissingAsIdentity to default false again
 	MissingAsIdentity = false
 	defer func() { AllowMissingVariables = true }()
 	for _, test := range missing {

@@ -21,9 +21,9 @@ var (
 
 	// MissingAsIdentity defines the behavior for a rendered missing variable
 	// when AllowMissingVariables is true. If MissingAsIdentity is true
-	// (default false) the missing variable will be rendered as an identity function,
+	// (default) the missing variable will be rendered as an identity function,
 	// the mustache variable string literal rendered back in the HTML.
-	MissingAsIdentity = false
+	MissingAsIdentity = true
 )
 
 // A TagType represents the specific type of mustache tag that a Tag
