@@ -15,8 +15,6 @@ This new fork provides the new global variable option **MissingAsIdentity** to a
 
 For example: {{unknown}} would be rendered as {{unknown}}, instead of "".
 
-If you want this functionality, after importing the package be sure to set **MissingAsIdentity** = *true* in your code.
-
 ## Why a Fork?
 
 I forked [hoisie/mustache](https://github.com/hoisie/mustache) because it does not appear to be maintained, and I wanted to add the following functionality:
